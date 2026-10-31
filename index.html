@@ -149,6 +149,13 @@
                     <option value="5">5 Scene</option>
                 </select>
 
+                <label for="durasiSinema" class="block mb-2 text-sm font-medium">Durasi Total Video</label>
+                <select id="durasiSinema" class="w-full p-2 mb-4 rounded bg-slate-800 border border-slate-700 focus:outline-none">
+                    <option value="15 detik">15 Detik</option>
+                    <option value="30 detik">30 Detik</option>
+                    <option value="60 detik">60 Detik</option>
+                </select>
+
                 <label for="rasioSinema" class="block mb-2 text-sm font-medium">Rasio Video</label>
                 <select id="rasioSinema" class="w-full p-2 mb-4 rounded bg-slate-800 border border-slate-700 focus:outline-none">
                     <option value="9:16 (Vertikal - TikTok/Reels)">9:16 Vertikal</option>
@@ -299,7 +306,7 @@ Hasilmu harus terdiri dari DUA bagian utama dengan heading yang jelas:
 Sajikan dalam format ${format}. Jika dalam bentuk tabel, pastikan mencakup kolom: Scene, Detik (Estimasi Waktu), Arahan Visual & Sudut Kamera, Audio/Voiceover, dan Teks Animasi di Layar. Jangan lupa sertakan 3 opsi "Hook" kuat di 3 detik pertama untuk menahan audiens.
 
 === BAGIAN B: PROMPTS UNTUK AI VIDEO GENERATOR ===
-Bagian ini akan disalin per-scene dan ditempelkan ke AI pembuat video (seperti Google Veo, Sora, Runway, Kling, atau Pika). Untuk SETIAP scene (termasuk scene hook), tulis satu prompt video yang berdiri sendiri (standalone) dengan aturan:
+Bagian ini akan disalin per-scene dan ditempelkan ke AI pembuat video (seperti Google Veo, Sora, Runway, Kling, atau Pika). Penting: seluruh prompt scene berikut adalah segmen berurutan dari SATU video utuh berdurasi total ${durasi} — bukan video terpisah yang disunting manual. Jaga konsistensi subjek, pakaian, gaya visual, dan arah cahaya antar scene agar hasil akhir menyatu seperti satu video yang mengalir. Untuk SETIAP scene (termasuk scene hook), tulis satu prompt video yang berdiri sendiri (standalone) dengan aturan:
 1. Deskriptif visual saja: sebutkan subjek, aksi, latar/tempat, gerak kamera (contoh: slow dolly-in, static wide shot, handheld tracking), pencahayaan, gaya visual (contoh: cinematic film-look, UGC handheld, 3D product render), dan durasi scene.
 2. JANGAN sertakan elemen yang tidak bisa dirender AI video: musik, efek suara, dialog, voiceover, teks on-screen, emoji, atau instruksi menampilkan tulisan.
 3. Hindari kata abstrak (contoh: "menjual", "menginspirasi", "kesan premium") — ganti dengan deskripsi visual yang konkret (contoh: "slow-motion close-up of water droplets on a matte black surface under soft studio lighting").
@@ -318,31 +325,47 @@ Bagian ini akan disalin per-scene dan ditempelkan ke AI pembuat video (seperti G
             const lokasi = document.getElementById('lokasi').value.trim() || '[LOKASI KOSONG]';
             const cuaca = document.getElementById('cuaca').value;
             const jumlah = document.getElementById('jumlahScene').value;
+            const durasi = document.getElementById('durasiSinema').value;
             const rasio = document.getElementById('rasioSinema').value;
             const gaya = document.getElementById('gayaSinema').value;
             const audio = document.getElementById('audioSinema').value;
 
             const instruksiBahasa = document.getElementById('inggrisSinema').checked
-                ? 'Tulis SELURUH prompt teknis (Text-to-Image, Motion, dan Audio/SFX) dalam Bahasa Inggris agar akurat saat ditempelkan ke AI Video Generator.'
-                : 'Tulis seluruh prompt teknis (Text-to-Image, Motion, dan Audio/SFX) dalam Bahasa Indonesia.';
+                ? 'Tulis SELURUH prompt teknis (Text-to-Image, Motion, Audio/SFX, dan Master Prompt) dalam Bahasa Inggris agar akurat saat ditempelkan ke AI Video Generator.'
+                : 'Tulis seluruh prompt teknis (Text-to-Image, Motion, Audio/SFX, dan Master Prompt) dalam Bahasa Indonesia.';
 
-            const hasilPrompt = `Bertindaklah sebagai AI Video Director dan sinematografer profesional. Buatkan rangkaian cerita visual sinematik yang berkesinambungan tentang suasana "${lokasi}".
+            const hasilPrompt = `Bertindaklah sebagai AI Video Director dan sinematografer profesional. Tujuan akhirnya adalah SATU VIDEO UTUH berdurasi total ${durasi} yang mengalir berkesinambungan tentang suasana "${lokasi}" — BUKAN kumpulan video terpisah yang disunting manual. ${jumlah} scene berikut hanyalah pembagian bagian di dalam satu video tersebut.
 
 Kondisi video:
+- Durasi total video: ${durasi} (satu video utuh yang mengalir).
 - Suasana cuaca & waktu: ${cuaca}.
 - Gaya visual: ${gaya}.
 - Atmosfer audio: ${audio}.
 - Rasio video: ${rasio}.
 - Jumlah scene: ${jumlah} scene (penomoran 1 s.d. ${jumlah}).
 
-Susun cerita visual sebagai sebuah perjalanan yang mengalir dan berkesinambungan: mulai dari Establishing Shot lingkungan, lalu aktivitas manusia/subjek yang hidup di lokasi tersebut, dan diakhirkan dengan pergerakan kamera mengikuti subjek (Tracking Shot). Pastikan setiap scene tersambung secara visual dengan scene sebelumnya — kesinambungan subjek, arah cahaya, pencahayaan, dan suasana harus konsisten.
+Aturan kesinambungan (WAJIB):
+- Tiap scene adalah potongan berurutan dari video yang sama, bukan video yang berdiri sendiri.
+- Sebutkan subjek utama dan detail visualnya dengan KONSISTEN di semua scene (nama/usia/pakaian subjek, benda yang dibawa, warna dominan) agar potongan menyatu menjadi satu video utuh.
+- Pertahankan arah cahaya dan pencahayaan yang logis antar scene (misal cahaya datang dari arah yang sama), serta suasana cuaca yang sama sepanjang video.
+- Susun alur cerita: Establishing Shot lingkungan → aktivitas manusia/subjek di lokasi → pergerakan kamera mengikuti subjek (Tracking Shot).
 
-Untuk SETIAP scene, hasilkan TIGA bagian yang dipisah dengan jelas:
+Kelola pembagian durasi: alokasikan ${durasi} ke ${jumlah} scene secara proporsional (misal establishing shot lebih singkat, scene aktivitas subjek lebih panjang) sehingga TOTALnya persis sama dengan ${durasi}. Cantumkan durasi tiap scene.
 
-[SCENE 1]
-1. TEXT-TO-IMAGE PROMPT: deskripsi visual yang sangat detail — subjek utama, latar/tempat, pencahayaan, tekstur permukaan (kayu basah, dedaunan, aspal, dll), komposisi, dan gaya visual. Deskripsi harus cukup untuk membangun 1 frame gambar statis yang indah.
+Hasil harus memiliki DUA bagian utama:
+
+=== BAGIAN A: RANGKAIAN SCENE (BREAKDOWN SATU VIDEO) ===
+Untuk SETIAP scene (1 s.d. ${jumlah}), tulis informasi berikut dengan format:
+
+[SCENE 1 — Durasi: X detik]
+1. TEXT-TO-IMAGE PROMPT: deskripsi visual yang sangat detail — subjek utama, latar/tempat, pencahayaan, tekstur permukaan (kayu basah, dedaunan, aspal, dll), komposisi, dan gaya visual. Cukup untuk membangun 1 frame gambar statis yang indah.
 2. IMAGE-TO-VIDEO MOTION PROMPT: gerakan kamera (contoh: slow dolly-in, pan left, crane up, static tripod), hembusan angin pada dedaunan/rumput, efek cuaca yang terlihat (tetesan hujan, kabut bergerak, kilat, debu beterbangan), dan pergerakan halus subjek. Dirancang untuk Kling, Runway, atau Veo (image-to-video).
-3. AUDIO/SFX PROMPT: suara lingkungan yang sesuai dengan suasana (contoh: deru hujan di daun pisang, jangkrik malam, angin menembus pepohonan pinus) dan elemen audio sesuai pilihan atmosfer audio.
+3. AUDIO/SFX PROMPT: suara lingkungan yang sesuai dengan suasana (contoh: deru hujan di daun pisang, jangkrik malam, angin menembus pepohonan pinus) sesuai pilihan atmosfer audio.
+
+Durasi semua scene harus dijumlahkan = ${durasi}.
+
+=== BAGIAN B: MASTER PROMPT (SATU VIDEO UTUH) ===
+Tulis SATU prompt gabungan yang berdiri sendiri untuk AI video yang mendukung generate panjang (seperti Google Veo atau Sora) dalam satu kali generate. Isi prompt harus merangkum seluruh ${durasi} video: latar "${lokasi}", cuaca (${cuaca}), gaya visual (${gaya}), atmosfer audio (${audio}), rasio ${rasio}, urutan alur (establishing → aktivitas subjek → tracking), konsistensi subjek di sepanjang video, dan instruksi bahwa hasilnya adalah satu video sinematik utuh yang mengalir tanpa jeda kasar. Panjang prompt 100–150 kata, deskriptif, tanpa dialog atau teks on-screen.
 
 Aturan tambahan:
 - Jangan sertakan dialog, voiceover, teks on-screen, atau tanda kutip di dalam prompt.
@@ -350,7 +373,7 @@ Aturan tambahan:
 - Beri judul pendek untuk tiap scene agar mudah dikenali.
 - ${instruksiBahasa}
 
-Ulangi format [SCENE 1] tersebut untuk scene 2 sampai scene ${jumlah}.`;
+Ulangi format [SCENE 1] untuk scene 2 sampai scene ${jumlah}, lalu tulis Bagian B.`;
 
             document.getElementById('outputPrompt').value = hasilPrompt;
             return true;
@@ -385,6 +408,7 @@ Ulangi format [SCENE 1] tersebut untuk scene 2 sampai scene ${jumlah}.`;
             document.getElementById('lokasi').value = '';
             document.getElementById('cuaca').selectedIndex = 0;
             document.getElementById('jumlahScene').selectedIndex = 0;
+            document.getElementById('durasiSinema').selectedIndex = 0;
             document.getElementById('rasioSinema').selectedIndex = 0;
             document.getElementById('gayaSinema').selectedIndex = 0;
             document.getElementById('audioSinema').selectedIndex = 0;

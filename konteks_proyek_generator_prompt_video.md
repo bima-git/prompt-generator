@@ -9,7 +9,7 @@ Dokumen ini disusun sebagai panduan konteks (*system context*) untuk AI Agent da
 * **Cara Kerja Sistem (Skenario Tanpa API):** Aplikasi ini murni bekerja sebagai **Alat Perakit Teks (*Prompt Builder*)** di sisi klien (*client-side*). Aplikasi **tidak** terhubung ke API AI mana pun. Pengguna memilih parameter di form, sistem menggabungkannya ke dalam *template* kalimat, lalu pengguna menyalin hasilnya ke platform AI pilihan mereka.
 * **Dua Mode (Tab Switcher):** Aplikasi memiliki **Mode 1 — Storyboard Iklan Produk** dan **Mode 2 — Video AI Sinematik/Atmosferik**, dipilih melalui tab di atas panel kiri. Tombol Buat Prompt mendelegasikan ke fungsi pembentuk prompt sesuai mode aktif.
 * **Alur 2 Tahap Mode 1 (Output 2 Bagian):** Prompt Mode 1 menghasilkan **Bagian A — Storyboard** (kreatif, bahasa Indonesia) dan **Bagian B — Prompt per-scene untuk AI video generator** (deskriptif visual, *standalone*, bilingual EN/ID, universal untuk Veo/Sora/Runway/Kling/Pika). Pengguna menempelkan prompt ke ChatGPT/Gemini, lalu menyalin tiap prompt Bagian B ke AI pembuat video.
-* **Alur Mode 2 (Video Sinematik):** Prompt Mode 2 mengarahkan AI sebagai **AI Video Director** untuk menyusun rangkaian cerita visual berkesinambungan (Establishing Shot → aktivitas subjek → Tracking Shot); tiap scene menghasilkan **3 prompt**: Text-to-Image, Image-to-Video Motion, dan Audio/SFX — untuk alur generate gambar lalu image-to-video di Kling/Runway/Veo.
+* **Alur Mode 2 (Video Sinematik):** Prompt Mode 2 mengarahkan AI sebagai **AI Video Director** untuk menyusun **SATU video utuh** berdurasi total pilihan (15/30/60 detik, bukan video terpisah) dengan alur berkesinambungan (Establishing Shot → aktivitas subjek → Tracking Shot). Output dua bagian: **Bagian A — Rangkaian Scene** (per scene: alokasi detik + 3 prompt: Text-to-Image, Image-to-Video Motion, Audio/SFX untuk Kling/Runway/Veo) dan **Bagian B — Master Prompt** (satu prompt gabungan untuk AI yang mendukung generate panjang seperti Veo/Sora).
 
 ## 2. Arsitektur & Spesifikasi Teknis (Tech Stack)
 
@@ -42,10 +42,11 @@ Desain mengadaptasi tata letak kartu terpusat yang terbagi menjadi **dua panel u
   1. **Tema / Lokasi Utama (`#lokasi`):** Input teks bebas (misal: "Pedesaan Jawa", "Hutan Pinus").
   2. **Suasana Cuaca & Waktu (`#cuaca`):** Dropdown — Badai Petir & Mendung Pekat, Hujan Deras Sore Hari, Kabut Pagi Dingin, Senja Golden Hour, Malam Sunyi.
   3. **Jumlah Scene (`#jumlahScene`):** Dropdown — 3 / 4 / 5 Scene.
-  4. **Rasio Video (`#rasioSinema`):** Dropdown — 9:16 Vertikal, 16:9 Horizontal, 1:1 Persegi, 4:3 Standar.
-  5. **Gaya Visual (`#gayaSinema`):** Dropdown — Photorealistic Cinematic 8K, Moody Dark Realism, Nostalgic Documentary.
-  6. **Atmosfer Audio (`#audioSinema`):** Dropdown — Suara Alam + Senandung Humming Melankolis, ASMR Cuaca & Alam Murni, Instrumen Ambient Sinematik.
-  7. **Opsi Bahasa Prompt Teknis (`#inggrisSinema`):** Checkbox (bawaan aktif) untuk menulis prompt teknis dalam Bahasa Inggris agar akurat di AI Video Generator.
+  4. **Durasi Total Video (`#durasiSinema`):** Dropdown — 15 / 30 / 60 detik (video utuh, dibagi ke tiap scene).
+  5. **Rasio Video (`#rasioSinema`):** Dropdown — 9:16 Vertikal, 16:9 Horizontal, 1:1 Persegi, 4:3 Standar.
+  6. **Gaya Visual (`#gayaSinema`):** Dropdown — Photorealistic Cinematic 8K, Moody Dark Realism, Nostalgic Documentary.
+  7. **Atmosfer Audio (`#audioSinema`):** Dropdown — Suara Alam + Senandung Humming Melankolis, ASMR Cuaca & Alam Murni, Instrumen Ambient Sinematik.
+  8. **Opsi Bahasa Prompt Teknis (`#inggrisSinema`):** Checkbox (bawaan aktif) untuk menulis prompt teknis dalam Bahasa Inggris agar akurat di AI Video Generator.
 * **Tombol Aksi (dipakai kedua mode):**
   * **Buat Prompt (`buatPrompt()`):** Mendelegasikan ke `buatPromptIklan()` atau `buatPromptSinematik()` sesuai mode aktif (`modeAktif`).
   * **Reset (`resetForm()`):** Mengembalikan seluruh input **kedua mode** dan output ke kondisi awal.
@@ -77,6 +78,7 @@ Sajikan dalam format ${format} (tabel: Scene, Detik, Arahan Visual & Sudut Kamer
 
 === BAGIAN B: PROMPTS UNTUK AI VIDEO GENERATOR ===
 Untuk SETIAP scene, tulis satu prompt standalone (visual-only: subjek, aksi, latar, gerak kamera, pencahayaan, gaya visual, durasi; maks 60 kata; tanpa musik/dialog/teks on-screen; hindari kata abstrak) dalam DUA versi: (EN) bahasa Inggris dan (ID) bahasa Indonesia, dengan penomoran scene konsisten dengan Bagian A.
+Kalimat WAJIB: seluruh prompt scene adalah segmen berurutan dari SATU video utuh berdurasi total ${durasi} — bukan video terpisah; konsistensi subjek/pakaian/gaya/arah cahaya antar scene agar hasil menyatu.
 ```
 
 *Catatan:* Opsi tambahan (CTA, target audiens terstruktur, batasan anggaran) hanya disisipkan ke akhir prompt jika diaktifkan/diisi.
@@ -84,17 +86,22 @@ Untuk SETIAP scene, tulis satu prompt standalone (visual-only: subjek, aksi, lat
 ### 4b. Mode 2 — Video AI Sinematik (`buatPromptSinematik()`)
 
 ```text
-Bertindaklah sebagai AI Video Director dan sinematografer profesional. Buatkan rangkaian cerita visual sinematik yang berkesinambungan tentang suasana "${lokasi}".
+Bertindaklah sebagai AI Video Director dan sinematografer profesional. Tujuan akhirnya adalah SATU VIDEO UTUH berdurasi total ${durasiSinema} yang mengalir berkesinambungan — BUKAN kumpulan video terpisah yang disunting manual. ${jumlahScene} scene hanyalah pembagian bagian di dalam satu video tersebut.
 
-Kondisi video: cuaca/waktu (${cuaca}), gaya visual (${gayaSinema}), atmosfer audio (${audioSinema}), rasio (${rasioSinema}), jumlah scene (${jumlahScene}).
+Kondisi video: durasi total (${durasiSinema}), cuaca/waktu (${cuaca}), gaya visual (${gayaSinema}), atmosfer audio (${audioSinema}), rasio (${rasioSinema}).
 
-Susun cerita sebagai perjalanan: Establishing Shot lingkungan → aktivitas manusia/subjek di lokasi → diakhiri Tracking Shot mengikuti subjek; setiap scene tersambung secara visual.
+Aturan kesinambungan (WAJIB): tiap scene potongan berurutan dari video yang sama; subjek & detail visual disebut KONSISTEN di semua scene; arah cahaya logis antar scene; cuaca konsisten; alur Establishing Shot → aktivitas subjek → Tracking Shot.
 
-Untuk SETIAP scene hasilkan TIGA bagian:
-[SCENE n]
-1. TEXT-TO-IMAGE PROMPT (detail visual, pencahayaan, tekstur, komposisi — cukup untuk 1 frame statis).
-2. IMAGE-TO-VIDEO MOTION PROMPT (gerakan kamera, hembusan angin, efek cuaca, pergerakan subjek — untuk Kling/Runway/Veo).
+Alokasi durasi: bagi ${durasiSinema} proporsional ke ${jumlahScene} scene, TOTAL persis = ${durasiSinema}, cantumkan durasi tiap scene.
+
+=== BAGIAN A: RANGKAIAN SCENE (BREAKDOWN SATU VIDEO) ===
+[SCENE n — Durasi: X detik]
+1. TEXT-TO-IMAGE PROMPT (detail visual, pencahayaan, tekstur, komposisi).
+2. IMAGE-TO-VIDEO MOTION PROMPT (gerakan kamera, hembusan angin, efek cuaca, pergerakan subjek — Kling/Runway/Veo).
 3. AUDIO/SFX PROMPT (suara lingkungan sesuai suasana).
+
+=== BAGIAN B: MASTER PROMPT (SATU VIDEO UTUH) ===
+SATU prompt gabungan 100–150 kata untuk AI yang mendukung generate panjang (Veo/Sora): merangkum latar, cuaca, gaya, audio, rasio, alur lengkap, konsistensi subjek, instruksi satu video sinematik utuh tanpa jeda kasar.
 
 Aturan: tanpa dialog/voiceover/teks on-screen/tanda kutip; deskripsi konkret; judul pendek per scene; seluruh prompt teknis dalam Bahasa Inggris jika checkbox #inggrisSinema aktif (default), Bahasa Indonesia jika tidak.
 ```

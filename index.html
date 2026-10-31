@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Prompt Storyboard Iklan</title>
+    <meta name="description" content="Buat prompt AI siap pakai untuk storyboard iklan video (Gemini, ChatGPT, Claude) hanya dengan mengisi tema produk, durasi, rasio, dan gaya iklan.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <!-- Memuat Tailwind CSS untuk tampilan instan tanpa file CSS terpisah -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-6 font-sans text-slate-800">
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
+        
+        <!-- PANEL KIRI: Input & Pengaturan -->
+        <div class="w-full md:w-1/2 p-6 bg-slate-900 text-white">
+            <h2 class="text-xl font-bold mb-4 text-blue-400">1) Input & Pengaturan</h2>
+            
+            <label for="tema" class="block mb-2 text-sm font-medium">Tema / Produk Utama</label>
+            <input type="text" id="tema" class="w-full p-2 mb-4 rounded bg-slate-800 border border-slate-700 focus:outline-none focus:border-blue-500" placeholder="contoh: Sepatu Lari, Kopi Dingin">
+
+            <label for="durasi" class="block mb-2 text-sm font-medium">Durasi Video</label>
+            <select id="durasi" class="w-full p-2 mb-4 rounded bg-slate-800 border border-slate-700 focus:outline-none">
+                <option value="15 detik">15 Detik</option>
+                <option value="30 detik">30 Detik</option>
+                <option value="60 detik">60 Detik</option>
+            </select>
+
+            <label for="rasio" class="block mb-2 text-sm font-medium">Format & Rasio Video</label>
+            <select id="rasio" class="w-full p-2 mb-4 rounded bg-slate-800 border border-slate-700 focus:outline-none">
+                <option value="9:16 (Vertikal - TikTok/Reels)">9:16 (Vertikal - TikTok/Reels)</option>
+                <option value="16:9 (Horizontal - YouTube/TV)">16:9 (Horizontal - YouTube/TV)</option>
+                <option value="1:1 (Persegi - Feed IG)">1:1 (Persegi - Feed IG)</option>
+                <option value="4:3 (Standar Presentasi)">4:3 (Standar Presentasi)</option>
+            </select>
+
+            <label for="gaya" class="block mb-2 text-sm font-medium">Gaya Iklan (Tone)</label>
+            <select id="gaya" class="w-full p-2 mb-4 rounded bg-slate-800 border border-slate-700 focus:outline-none">
+                <option value="Lucu dan menghibur (Komedik)">Komedian / Lucu</option>
+                <option value="Estetik dan Elegan">Estetik / Elegan</option>
+                <option value="Emosional dan Storytelling">Emosional / Storytelling</option>
+                <option value="Hard-selling dan langsung ke intinya">Hard-Selling</option>
+            </select>
+
+            <label for="format" class="block mb-2 text-sm font-medium">Format Output (Tampilan dari AI)</label>
+            <select id="format" class="w-full p-2 mb-6 rounded bg-slate-800 border border-slate-700 focus:outline-none">
+                <option value="Tabel Storyboard Rinci (Scene, Visual, Audio, Teks)">Tabel Storyboard Rinci</option>
+                <option value="Skrip Dialog & Narasi (Paragraf)">Skrip Narasi Biasa</option>
+            </select>
+
+            <!-- OPSI TAMBAHAN -->
+            <div class="border-t border-slate-700 pt-4 mb-6">
+                <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-3">Opsi Tambahan</h3>
+
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="ctaAktif" class="mr-2 accent-blue-500" onchange="toggleCta()">
+                    <label for="ctaAktif" class="text-sm cursor-pointer">Sertakan Call-to-Action (CTA)</label>
+                </div>
+                <input type="text" id="cta" disabled class="w-full p-2 mb-3 rounded bg-slate-800 border border-slate-700 focus:outline-none focus:border-blue-500 disabled:opacity-40" placeholder="contoh: Kunjungi website kami sekarang">
+
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="audiensAktif" class="mr-2 accent-blue-500" onchange="toggleAudiens()">
+                    <label for="audiensAktif" class="text-sm cursor-pointer">Tentukan target audiens</label>
+                </div>
+                <div id="audiensForm" class="hidden space-y-3 ml-1 pl-3 border-l-2 border-blue-500/50 mb-3">
+                    <div>
+                        <label for="umur" class="block mb-1 text-xs font-medium text-slate-300">Rentang Umur</label>
+                        <select id="umur" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:outline-none text-sm">
+                            <option value="">Tidak spesifik</option>
+                            <option value="anak-anak usia 6-12 tahun">Anak-anak (6-12)</option>
+                            <option value="remaja usia 13-17 tahun">Remaja (13-17)</option>
+                            <option value="usia 18-24 tahun (Gen Z / dewasa muda)">Dewasa Muda (18-24)</option>
+                            <option value="usia 25-34 tahun">Dewasa (25-34)</option>
+                            <option value="usia 35-44 tahun">Dewasa Matang (35-44)</option>
+                            <option value="usia 45 tahun ke atas">Lansia (45+)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="profesi" class="block mb-1 text-xs font-medium text-slate-300">Profesi / Pekerjaan</label>
+                        <input type="text" id="profesi" list="profesiList" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:outline-none text-sm" placeholder="contoh: Mahasiswa, Ibu Rumah Tangga">
+                        <datalist id="profesiList">
+                            <option value="Pelajar / Mahasiswa"></option>
+                            <option value="Karyawan / Pekerja Kantoran"></option>
+                            <option value="Ibu Rumah Tangga"></option>
+                            <option value="Wirausaha / Pebisnis"></option>
+                            <option value="Profesional / Freelancer"></option>
+                            <option value="Atlet / Penggiat Olahraga"></option>
+                        </datalist>
+                    </div>
+                    <div>
+                        <label for="minat" class="block mb-1 text-xs font-medium text-slate-300">Peminat / Minat</label>
+                        <input type="text" id="minat" list="minatList" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:outline-none text-sm" placeholder="contoh: Skincare, Gaming, Kuliner">
+                        <datalist id="minatList">
+                            <option value="Olahraga / Fitness"></option>
+                            <option value="Kuliner / Foodie"></option>
+                            <option value="Fashion / Streetwear"></option>
+                            <option value="Skincare / Beauty"></option>
+                            <option value="Teknologi / Gadget"></option>
+                            <option value="Gaming"></option>
+                            <option value="Travel / Liburan"></option>
+                            <option value="Parenting / Keluarga"></option>
+                        </datalist>
+                    </div>
+                    <div>
+                        <label for="audiensLain" class="block mb-1 text-xs font-medium text-slate-300">Detail Lainnya (opsional)</label>
+                        <input type="text" id="audiensLain" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:outline-none text-sm" placeholder="contoh: ibu muda perkotaan, gemar belanja online">
+                    </div>
+                </div>
+
+                <label for="anggaran" class="block mb-2 text-sm font-medium">Batasan Anggaran Produksi</label>
+                <select id="anggaran" class="w-full p-2 rounded bg-slate-800 border border-slate-700 focus:outline-none">
+                    <option value="">Tidak ada batasan</option>
+                    <option value="budget rendah (hanya smartphone, tanpa sewa lokasi atau talent profesional)">Budget Rendah (Smartphone)</option>
+                    <option value="budget menengah (1-2 talent, lokasi sederhana, editing dasar)">Budget Menengah</option>
+                    <option value="budget tinggi (produksi penuh dengan tim, lokasi, dan talent profesional)">Budget Tinggi</option>
+                </select>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="buatPrompt()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full transition">Buat Prompt</button>
+                <button onclick="resetForm()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded w-1/3 transition">Reset</button>
+            </div>
+        </div>
+
+        <!-- PANEL KANAN: Output Prompt -->
+        <div class="w-full md:w-1/2 p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-700">2) Prompt Siap Pakai</h2>
+                <span id="charCount" class="text-xs text-slate-400">0 karakter &middot; 0 kata</span>
+            </div>
+            
+            <textarea id="outputPrompt" class="w-full flex-grow p-4 rounded bg-slate-100 border border-slate-300 font-mono text-sm mb-4 focus:outline-none focus:border-blue-500" placeholder="Hasil prompt akan muncul di sini..." oninput="updateCount()"></textarea>
+            
+            <div class="flex space-x-3">
+                <button onclick="salinTeks()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded w-full transition">Salin ke Clipboard</button>
+                <button onclick="unduhTxt()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded w-full transition">Download .txt</button>
+            </div>
+            <p class="mt-3 text-xs text-slate-400 leading-relaxed">
+                Cara pakai: <strong class="text-slate-500">1)</strong> Salin prompt ini ke ChatGPT / Gemini / Claude.
+                <strong class="text-slate-500">2)</strong> Hasilnya berisi <strong class="text-slate-500">Bagian A (Storyboard)</strong> dan <strong class="text-slate-500">Bagian B (Prompt per Scene)</strong>.
+                <strong class="text-slate-500">3)</strong> Salin tiap prompt di Bagian B (versi EN atau ID) dan tempel ke AI video seperti Veo, Sora, Runway, atau Kling.
+            </p>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFIKASI -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg text-sm font-medium text-white bg-slate-800 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <!-- LOGIKA JAVASCRIPT -->
+    <script>
+        // ==== UTILITAS UI ====
+        function showToast(pesan, tipe = 'success') {
+            const el = document.getElementById('toast');
+            el.textContent = pesan;
+            el.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg text-sm font-medium text-white transition-opacity duration-300 opacity-0 pointer-events-none ' + (tipe === 'error' ? 'bg-red-500' : 'bg-slate-800');
+            requestAnimationFrame(() => el.classList.replace('opacity-0', 'opacity-100'));
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => el.classList.replace('opacity-100', 'opacity-0'), 2500);
+        }
+
+        function toggleCta() {
+            document.getElementById('cta').disabled = !document.getElementById('ctaAktif').checked;
+        }
+
+        function toggleAudiens() {
+            document.getElementById('audiensForm').classList.toggle('hidden', !document.getElementById('audiensAktif').checked);
+        }
+
+        function susunAudiens() {
+            const bagian = [];
+            const umur = document.getElementById('umur').value;
+            if (umur) bagian.push(umur);
+            const profesi = document.getElementById('profesi').value.trim();
+            if (profesi) bagian.push('berprofesi sebagai ' + profesi);
+            const minat = document.getElementById('minat').value.trim();
+            if (minat) bagian.push('dengan minat di bidang ' + minat);
+            const lain = document.getElementById('audiensLain').value.trim();
+            if (lain) bagian.push(lain);
+            return bagian.join(', ');
+        }
+
+        function updateCount() {
+            const teks = document.getElementById('outputPrompt').value;
+            const karakter = teks.length;
+            const kata = teks.trim() === '' ? 0 : teks.trim().split(/\s+/).length;
+            document.getElementById('charCount').textContent = karakter + ' karakter · ' + kata + ' kata';
+        }
+
+        // ==== LOGIKA UTAMA ====
+        function buatPrompt() {
+            const tema = document.getElementById('tema').value.trim() || '[TEMA KOSONG]';
+            const durasi = document.getElementById('durasi').value;
+            const rasio = document.getElementById('rasio').value;
+            const gaya = document.getElementById('gaya').value;
+            const format = document.getElementById('format').value;
+
+            // Opsi tambahan (hanya disisipkan jika diaktifkan & terisi)
+            let tambahan = '';
+            const cta = document.getElementById('cta').value.trim();
+            if (document.getElementById('ctaAktif').checked && cta) {
+                tambahan += `\n\nAkhiri video dengan call-to-action yang jelas dan mudah diingat: "${cta}".`;
+            }
+            if (document.getElementById('audiensAktif').checked) {
+                const audiens = susunAudiens();
+                if (!audiens) {
+                    showToast('Lengkapi setidaknya satu kolom audiens, atau nonaktifkan opsi ini.', 'error');
+                    return;
+                }
+                tambahan += `\n\nVideo ini ditujukan khusus untuk target audiens: ${audiens}. Sesuaikan bahasa, gaya visual, pilihan talent, dan referensi budaya dengan profil tersebut.`;
+            }
+            const anggaran = document.getElementById('anggaran').value;
+            if (anggaran) {
+                tambahan += `\n\nPerhatikan batasan keamanan dan anggaran produksi berikut: ${anggaran}. Jangan mengusulkan ide yang membutuhkan peralatan atau talent di luar batasan tersebut.`;
+            }
+
+            // Menggabungkan nilai ke dalam formula kalimat (Template Literal)
+            const hasilPrompt = `Bertindaklah sebagai Creative Director dan spesialis pembuat Storyboard iklan profesional. Buatkan ide skrip video iklan untuk produk/tema "${tema}". 
+
+Video ini berdurasi maksimal ${durasi} dan dirancang khusus untuk format rasio visual ${rasio}. Gunakan pendekatan visual dan narasi yang ${gaya}. 
+
+Hasilmu harus terdiri dari DUA bagian utama dengan heading yang jelas:
+
+=== BAGIAN A: STORYBOARD ===
+Sajikan dalam format ${format}. Jika dalam bentuk tabel, pastikan mencakup kolom: Scene, Detik (Estimasi Waktu), Arahan Visual & Sudut Kamera, Audio/Voiceover, dan Teks Animasi di Layar. Jangan lupa sertakan 3 opsi "Hook" kuat di 3 detik pertama untuk menahan audiens.
+
+=== BAGIAN B: PROMPTS UNTUK AI VIDEO GENERATOR ===
+Bagian ini akan disalin per-scene dan ditempelkan ke AI pembuat video (seperti Google Veo, Sora, Runway, Kling, atau Pika). Untuk SETIAP scene (termasuk scene hook), tulis satu prompt video yang berdiri sendiri (standalone) dengan aturan:
+1. Deskriptif visual saja: sebutkan subjek, aksi, latar/tempat, gerak kamera (contoh: slow dolly-in, static wide shot, handheld tracking), pencahayaan, gaya visual (contoh: cinematic film-look, UGC handheld, 3D product render), dan durasi scene.
+2. JANGAN sertakan elemen yang tidak bisa dirender AI video: musik, efek suara, dialog, voiceover, teks on-screen, emoji, atau instruksi menampilkan tulisan.
+3. Hindari kata abstrak (contoh: "menjual", "menginspirasi", "kesan premium") — ganti dengan deskripsi visual yang konkret (contoh: "slow-motion close-up of water droplets on a matte black surface under soft studio lighting").
+4. Tiap prompt maksimal 60 kata.
+5. Tulis tiap prompt dalam DUA versi berurutan:
+   (EN) [prompt dalam bahasa Inggris]
+   (ID) [terjemahan prompt yang sama dalam bahasa Indonesia]
+6. Beri penomoran scene yang konsisten dengan Bagian A.${tambahan}`;
+
+            // Menampilkan hasil di kotak teks output
+            document.getElementById('outputPrompt').value = hasilPrompt;
+            updateCount();
+            showToast('Prompt berhasil dibuat!');
+        }
+
+        function resetForm() {
+            document.getElementById('tema').value = '';
+            document.getElementById('durasi').selectedIndex = 0;
+            document.getElementById('rasio').selectedIndex = 0;
+            document.getElementById('gaya').selectedIndex = 0;
+            document.getElementById('format').selectedIndex = 0;
+            document.getElementById('cta').value = '';
+            document.getElementById('cta').disabled = true;
+            document.getElementById('ctaAktif').checked = false;
+            document.getElementById('audiensAktif').checked = false;
+            document.getElementById('audiensForm').classList.add('hidden');
+            document.getElementById('umur').selectedIndex = 0;
+            document.getElementById('profesi').value = '';
+            document.getElementById('minat').value = '';
+            document.getElementById('audiensLain').value = '';
+            document.getElementById('anggaran').selectedIndex = 0;
+            document.getElementById('outputPrompt').value = '';
+            updateCount();
+            showToast('Formulir sudah direset.');
+        }
+
+        async function salinTeks() {
+            const teksOutput = document.getElementById('outputPrompt');
+            if (teksOutput.value.trim() === '') {
+                showToast('Tidak ada prompt yang bisa disalin!', 'error');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(teksOutput.value);
+            } catch (err) {
+                // Fallback untuk browser lama / konteks non-secure
+                teksOutput.select();
+                document.execCommand('copy');
+            }
+            showToast('Prompt berhasil disalin! Silakan tempel di Gemini atau ChatGPT.');
+        }
+
+        function unduhTxt() {
+            const teks = document.getElementById('outputPrompt').value.trim();
+            if (teks === '') {
+                showToast('Tidak ada prompt untuk diunduh!', 'error');
+                return;
+            }
+            const namaTema = (document.getElementById('tema').value.trim() || 'prompt')
+                .toLowerCase()
+                .replace(/[^\w\d]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            const blob = new Blob([teks], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prompt-storyboard-${namaTema}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('File .txt berhasil diunduh!');
+        }
+
+        // Hitung karakter saat halaman dimuat
+        updateCount();
+    </script>
+</body>
+</html>
